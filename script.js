@@ -52,10 +52,14 @@ calculator.observeEvent("change", () => {
 
 latexInput.addEventListener("input", syncToDesmos);
 
-// static function buttons
+// --- ユニバーサルボタン挿入処理 ---
 document.querySelectorAll('[data-insert]').forEach(button => {
   button.addEventListener("click", () => {
-    const insert = button.getAttribute("data-insert");
+    const rawInsert = button.getAttribute("data-insert");
+
+    // Functionボタン内のみJSON.parseを使う
+    const insert = button.closest("#functions") ? JSON.parse('"' + rawInsert + '"') : rawInsert;
+
     const start = latexInput.selectionStart;
     const end = latexInput.selectionEnd;
     latexInput.setRangeText(insert, start, end, "end");
@@ -64,19 +68,19 @@ document.querySelectorAll('[data-insert]').forEach(button => {
   });
 });
 
-// alphabet shift
+// アルファベットShift
 document.getElementById("shiftToggle").addEventListener("click", () => {
   alphabetShiftOn = !alphabetShiftOn;
   renderAlphabetKeys();
 });
 
-// greek shift
+// ギリシャShift
 document.getElementById("greekShiftToggle").addEventListener("click", () => {
   greekShiftOn = !greekShiftOn;
   renderGreekKeys();
 });
 
-// alphabet key rendering
+// アルファベット描画
 function renderAlphabetKeys() {
   const container = document.getElementById("alphabetButtons");
   container.innerHTML = "";
@@ -98,7 +102,7 @@ function renderAlphabetKeys() {
   }
 }
 
-// greek key rendering
+// ギリシャ描画
 function renderGreekKeys() {
   const greekMap = {
     alpha: ["α", "Α"], beta: ["β", "Β"], gamma: ["γ", "Γ"], delta: ["δ", "Δ"],
@@ -128,7 +132,7 @@ function renderGreekKeys() {
   }
 }
 
-// init tabs
+// タブ切り替え
 document.querySelectorAll(".tab-button").forEach(btn => {
   btn.addEventListener("click", () => {
     document.querySelectorAll(".tab-content").forEach(tab => tab.classList.remove("active"));
@@ -140,7 +144,7 @@ updateSelector();
 renderAlphabetKeys();
 renderGreekKeys();
 
-// storage/export/import
+// ローカルストレージ保存・読み込み・エクスポート・インポート
 document.getElementById("saveBtn").onclick = () => {
   const data = calculator.getState();
   localStorage.setItem("desmosGraph", JSON.stringify(data));
