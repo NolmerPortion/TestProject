@@ -83,7 +83,10 @@ calculator.observeEvent("change", () => {
 
 latexInput.addEventListener("input", syncToDesmos);
 
+// Greek/Function キーのイベント登録（alphabetButtons内のボタンは除外）
 document.querySelectorAll('[data-insert]').forEach(button => {
+  if (button.closest("#alphabetButtons")) return;
+
   button.addEventListener("click", () => {
     const insert = JSON.parse('"' + button.getAttribute("data-insert") + '"');
     const start = latexInput.selectionStart;
