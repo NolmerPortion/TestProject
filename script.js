@@ -1,15 +1,10 @@
-// script.js for ver.1.5
-
 const calculator = Desmos.GraphingCalculator(document.getElementById("calculator"));
 const latexInput = document.getElementById("latexInput");
 const selector = document.getElementById("expressionSelector");
 const indicator = document.getElementById("statusIndicator");
-const autoformatToggle = document.getElementById("autoformatToggle");
 
-let autoformatEnabled = true;
-autoformatToggle.addEventListener("change", () => {
-  autoformatEnabled = autoformatToggle.value === "on";
-});
+let alphabetShiftOn = false;
+let greekShiftOn = false;
 
 function updateSelector() {
   const expressions = calculator.getExpressions();
@@ -43,7 +38,6 @@ function updateFromDesmos() {
 }
 
 selector.addEventListener("change", updateFromDesmos);
-
 document.getElementById("sendBtn").onclick = syncToDesmos;
 document.getElementById("getBtn").onclick = updateFromDesmos;
 document.getElementById("clearInputBtn").onclick = () => {
@@ -56,25 +50,12 @@ calculator.observeEvent("change", () => {
   updateFromDesmos();
 });
 
-latexInput.addEventListener("input", (e) => {
-  if (autoformatEnabled) {
-    const value = latexInput.value;
-    const pos = latexInput.selectionStart;
-
-    if (value[pos - 1] === "*") {
-      latexInput.value = value.slice(0, pos - 1) + "\\cdot" + value.slice(pos);
-      latexInput.setSelectionRange(pos + 4, pos + 4);
-    } else if (value[pos - 1] === "(") {
-      latexInput.value = value.slice(0, pos - 1) + "\\left(\\right)" + value.slice(pos);
-      latexInput.setSelectionRange(pos + 6, pos + 6);
-    }
-  }
-  syncToDesmos();
-});
+latexInput.addEventListener("input", syncToDesmos);
 
 document.querySelectorAll('[data-insert]').forEach(button => {
   button.addEventListener("click", () => {
-    const insert = button.getAttribute("data-insert");
+    const rawInsert = button.getAttribute("data-insert");
+    const insert = button.closest("#functions") ? JSON.parse('"' + rawInsert + '"') : rawInsert;
     const start = latexInput.selectionStart;
     const end = latexInput.selectionEnd;
     latexInput.setRangeText(insert, start, end, "end");
@@ -83,12 +64,114 @@ document.querySelectorAll('[data-insert]').forEach(button => {
   });
 });
 
+// Alphabet Shift
+document.getElementById("shiftToggle").addEventListener("click", () => {
+  alphabetShiftOn = !alphabetShiftOn;
+  renderAlphabetKeys();
+});
+
+// Greek Shift
+document.getElementById("greekShiftToggle").addEventListener("click", () => {
+  greekShiftOn = !greekShiftOn;
+  renderGreekKeys();
+});
+
+function renderAlphabetKeys() {
+  const container = document.getElementById("alphabetButtons");
+  container.innerHTML = "";
+  for (let i = 97; i <= 122; i++) {
+    const char = String.fromCharCode(i);
+    const label = alphabetShiftOn ? char.toUpperCase() : char;
+    const btn = document.createElement("button");
+    btn.textContent = label;
+    btn.setAttribute("data-insert", label);
+    btn.addEventListener("click", () => {
+      const insert = btn.getAttribute("data-insert");
+      const start = latexInput.selectionStart;
+      const end = latexInput.selectionEnd;
+      latexInput.setRangeText(insert, start, end, "end");
+      syncToDesmos();
+      latexInput.focus();
+    });
+    container.appendChild(btn);
+  }
+}
+
+function renderGreekKeys() {
+  const greekMap = {
+    alpha: ["α", "Α"], beta: ["β", "Β"], gamma: ["γ", "Γ"], delta: ["δ", "Δ"],
+    epsilon: ["ε", "Ε"], zeta: ["ζ", "Ζ"], eta: ["η", "Η"], theta: ["θ", "Θ"],
+    iota: ["ι", "Ι"], kappa: ["κ", "Κ"], lambda: ["λ", "Λ"], mu: ["μ", "Μ"],
+    nu: ["ν", "Ν"], xi: ["ξ", "Ξ"], omicron: ["ο", "Ο"], pi: ["π", "Π"],
+    rho: ["ρ", "Ρ"], sigma: ["σ", "Σ"], tau: ["τ", "Τ"], upsilon: ["υ", "Υ"],
+    phi: ["φ", "Φ"], chi: ["χ", "Χ"], psi: ["ψ", "Ψ"], omega: ["ω", "Ω"]
+  };
+
+  const capitalizeFirst = str => str.charAt(0).toUpperCase() + str.slice(1);
+
+  const container = document.getElementById("greekButtons");
+  container.innerHTML = "";
+  for (const [name, [lower, upper]] of Object.entries(greekMap)) {
+    const label = greekShiftOn ? upper : lower;
+    const latex = greekShiftOn ? `\\${capitalizeFirst(name)}` : `\\${name}`;
+    const btn = document.createElement("button");
+    btn.textContent = label;
+    btn.setAttribute("data-insert", latex);
+    btn.addEventListener("click", () => {
+      const insert = btn.getAttribute("data-insert");
+      const start = latexInput.selectionStart;
+      const end = latexInput.selectionEnd;
+      latexInput.setRangeText(insert, start, end, "end");
+      syncToDesmos();
+      latexInput.focus();
+    });
+    container.appendChild(btn);
+  }
+}
+
 document.querySelectorAll(".tab-button").forEach(btn => {
   btn.addEventListener("click", () => {
     document.querySelectorAll(".tab-content").forEach(tab => tab.classList.remove("active"));
     document.getElementById(btn.dataset.tab).classList.add("active");
   });
 });
-
 document.querySelector(".tab-button[data-tab='letters']").click();
 updateSelector();
+renderAlphabetKeys();
+renderGreekKeys();
+
+document.getElementById("saveBtn").onclick = () => {
+  const data = calculator.getState();
+  localStorage.setItem("desmosGraph", JSON.stringify(data));
+  alert("Saved to local storage.");
+};
+document.getElementById("loadBtn").onclick = () => {
+  const data = localStorage.getItem("desmosGraph");
+  if (data) calculator.setState(JSON.parse(data));
+};
+document.getElementById("exportBtn").onclick = () => {
+  const data = calculator.getState();
+  const blob = new Blob([JSON.stringify(data)], { type: "application/json" });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = "desmos_graph.json";
+  a.click();
+  URL.revokeObjectURL(url);
+};
+document.getElementById("importBtn").onclick = () => {
+  document.getElementById("importFile").click();
+};
+document.getElementById("importFile").addEventListener("change", event => {
+  const file = event.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = e => {
+    try {
+      calculator.setState(JSON.parse(e.target.result));
+    } catch {
+      alert("Invalid JSON file.");
+    }
+  };
+  reader.readAsText(file);
+});
