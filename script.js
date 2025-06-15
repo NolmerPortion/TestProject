@@ -1,18 +1,21 @@
-// Desmos初期化
+// Desmosの初期化
 const elt = document.getElementById('calculator');
 const calculator = Desmos.GraphingCalculator(elt, {
   expressions: true,
   settingsMenu: false
 });
 
-// ギリシャ文字入力機能
+// キーボードのボタンがクリックされたときの動作
 document.getElementById('keyboard').addEventListener('click', function (e) {
   if (e.target.tagName === 'BUTTON') {
-    const latex = e.target.getAttribute('data-latex');
+    let latex = e.target.getAttribute('data-latex');  // \gamma など
+
     const current = calculator.getExpressions();
     let target = current.find(expr => expr.id === 'main');
 
-    // 新しく作るか、既存の式に追加
+    // latexをそのまま渡すのではなく、Desmosに渡す直前でエスケープする
+    latex = latex.replace(/\\/g, '\\\\');  // \ を \\ に置換
+
     if (!target) {
       calculator.setExpression({ id: 'main', latex });
     } else {
