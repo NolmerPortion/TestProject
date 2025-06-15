@@ -52,14 +52,10 @@ calculator.observeEvent("change", () => {
 
 latexInput.addEventListener("input", syncToDesmos);
 
-// --- ユニバーサルボタン挿入処理 ---
 document.querySelectorAll('[data-insert]').forEach(button => {
   button.addEventListener("click", () => {
     const rawInsert = button.getAttribute("data-insert");
-
-    // Functionボタン内のみJSON.parseを使う
     const insert = button.closest("#functions") ? JSON.parse('"' + rawInsert + '"') : rawInsert;
-
     const start = latexInput.selectionStart;
     const end = latexInput.selectionEnd;
     latexInput.setRangeText(insert, start, end, "end");
@@ -68,19 +64,18 @@ document.querySelectorAll('[data-insert]').forEach(button => {
   });
 });
 
-// アルファベットShift
+// Alphabet Shift
 document.getElementById("shiftToggle").addEventListener("click", () => {
   alphabetShiftOn = !alphabetShiftOn;
   renderAlphabetKeys();
 });
 
-// ギリシャShift
+// Greek Shift
 document.getElementById("greekShiftToggle").addEventListener("click", () => {
   greekShiftOn = !greekShiftOn;
   renderGreekKeys();
 });
 
-// アルファベット描画
 function renderAlphabetKeys() {
   const container = document.getElementById("alphabetButtons");
   container.innerHTML = "";
@@ -102,7 +97,6 @@ function renderAlphabetKeys() {
   }
 }
 
-// ギリシャ描画
 function renderGreekKeys() {
   const greekMap = {
     alpha: ["α", "Α"], beta: ["β", "Β"], gamma: ["γ", "Γ"], delta: ["δ", "Δ"],
@@ -112,11 +106,14 @@ function renderGreekKeys() {
     rho: ["ρ", "Ρ"], sigma: ["σ", "Σ"], tau: ["τ", "Τ"], upsilon: ["υ", "Υ"],
     phi: ["φ", "Φ"], chi: ["χ", "Χ"], psi: ["ψ", "Ψ"], omega: ["ω", "Ω"]
   };
+
+  const capitalizeFirst = str => str.charAt(0).toUpperCase() + str.slice(1);
+
   const container = document.getElementById("greekButtons");
   container.innerHTML = "";
   for (const [name, [lower, upper]] of Object.entries(greekMap)) {
     const label = greekShiftOn ? upper : lower;
-    const latex = greekShiftOn ? `\\${name.toUpperCase()}` : `\\${name}`;
+    const latex = greekShiftOn ? `\\${capitalizeFirst(name)}` : `\\${name}`;
     const btn = document.createElement("button");
     btn.textContent = label;
     btn.setAttribute("data-insert", latex);
@@ -132,7 +129,6 @@ function renderGreekKeys() {
   }
 }
 
-// タブ切り替え
 document.querySelectorAll(".tab-button").forEach(btn => {
   btn.addEventListener("click", () => {
     document.querySelectorAll(".tab-content").forEach(tab => tab.classList.remove("active"));
@@ -144,7 +140,6 @@ updateSelector();
 renderAlphabetKeys();
 renderGreekKeys();
 
-// ローカルストレージ保存・読み込み・エクスポート・インポート
 document.getElementById("saveBtn").onclick = () => {
   const data = calculator.getState();
   localStorage.setItem("desmosGraph", JSON.stringify(data));
