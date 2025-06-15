@@ -27,13 +27,20 @@ document.addEventListener("DOMContentLoaded", () => {
         const latexCode = button.dataset.latex;
 
         if (selected && selected.id) {
+          // 既存の選択された式に追記
           calculator.setExpression({
             id: selected.id,
-            latex: (selected.latex || '') + latexCode
+            latex: (selected.latex ?? '') + latexCode
           });
         } else {
+          // 新規行を作成し、選択状態にセット
           const id = `expr${Date.now()}`;
           calculator.setExpression({ id, latex: latexCode });
+
+          // 少し遅らせて選択状態を強制（UIとのタイミングずれ対策）
+          setTimeout(() => {
+            calculator.setSelectedExpression({ id });
+          }, 10);
         }
       });
       keyboardDiv.appendChild(button);
