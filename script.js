@@ -50,69 +50,71 @@ calculator.observeEvent("change", () => {
 
 latexInput.addEventListener("input", syncToDesmos);
 
-// Insert text at cursor
-function insertAtCursor(text) {
-  const start = latexInput.selectionStart;
-  const end = latexInput.selectionEnd;
-  latexInput.setRangeText(text, start, end, "end");
-  syncToDesmos();
-  latexInput.focus();
-}
+document.querySelectorAll('[data-insert]').forEach(button => {
+  button.addEventListener("click", () => {
+    const insert = JSON.parse('"' + button.getAttribute("data-insert") + '"');
+    const start = latexInput.selectionStart;
+    const end = latexInput.selectionEnd;
+    latexInput.setRangeText(insert, start, end, "end");
+    syncToDesmos();
+    latexInput.focus();
+  });
+});
 
-// Tab switching
 document.querySelectorAll(".tab-button").forEach(btn => {
   btn.addEventListener("click", () => {
     document.querySelectorAll(".tab-content").forEach(tab => tab.classList.remove("active"));
     document.getElementById(btn.dataset.tab).classList.add("active");
   });
 });
+
+// 初期化
 document.querySelector(".tab-button[data-tab='letters']").click();
+updateSelector();
 
-// Alphabet keys
-const alphaKeys = "abcdefghijklmnopqrstuvwxyz".split("");
-let shift = false;
-document.getElementById("shiftToggle").onclick = () => {
-  shift = !shift;
-  renderAlphabetKeys();
-};
+// ファイル保存・読み込み関連
+document.getElementById("saveBtn").addEventListener("click", () => {
+  const expressions = calculator.getExpressions();
+  localStorage.setItem("savedExpressions", JSON.stringify(expressions));
+  alert("Expressions saved locally.");
+});
 
-function renderAlphabetKeys() {
-  const container = document.getElementById("alphabetKeys");
-  container.innerHTML = "";
-  alphaKeys.forEach(ch => {
-    const btn = document.createElement("button");
-    const label = shift ? ch.toUpperCase() : ch;
-    btn.textContent = label;
-    btn.onclick = () => insertAtCursor(label);
-    container.appendChild(btn);
-  });
-}
-renderAlphabetKeys();
+document.getElementById("loadBtn").addEventListener("click", () => {
+  const saved = localStorage.getItem("savedExpressions");
+  if (saved) {
+    calculator.setExpressions([]);
+    const expressions = JSON.parse(saved);
+    expressions.forEach(expr => calculator.setExpression(expr));
+  }
+});
 
-// Greek keys
-const greekMap = [
-  ["alpha", "α", "Α"], ["beta", "β", "Β"], ["gamma", "γ", "Γ"], ["delta", "δ", "Δ"],
-  ["epsilon", "ε", "Ε"], ["zeta", "ζ", "Ζ"], ["eta", "η", "Η"], ["theta", "θ", "Θ"],
-  ["iota", "ι", "Ι"], ["kappa", "κ", "Κ"], ["lambda", "λ", "Λ"], ["mu", "μ", "Μ"],
-  ["nu", "ν", "Ν"], ["xi", "ξ", "Ξ"], ["omicron", "ο", "Ο"], ["pi", "π", "Π"],
-  ["rho", "ρ", "Ρ"], ["sigma", "σ", "Σ"], ["tau", "τ", "Τ"], ["upsilon", "υ", "Υ"],
-  ["phi", "φ", "Φ"], ["chi", "χ", "Χ"], ["psi", "ψ", "Ψ"], ["omega", "ω", "Ω"]
-];
+document.getElementById("exportBtn").addEventListener("click", () => {
+  const data = JSON.stringify(calculator.getExpressions(), null, 2);
+  const blob = new Blob([data], { type: "application/json" });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = "desmos-expressions.json";
+  a.click();
+  URL.revokeObjectURL(url);
+});
 
-let greekShift = false;
-document.getElementById("greekShiftToggle").onclick = () => {
-  greekShift = !greekShift;
-  renderGreekKeys();
-};
+document.getElementById("importBtn").addEventListener("click", () => {
+  document.getElementById("importFile").click();
+});
 
-function renderGreekKeys() {
-  const container = document.getElementById("greekKeys");
-  container.innerHTML = "";
-  greekMap.forEach(([cmd, lower, upper]) => {
-    const btn = document.createElement("button");
-    btn.textContent = greekShift ? upper : lower;
-    btn.onclick = () => insertAtCursor(`\\${greekShift ? cmd.charAt(0).toUpperCase() + cmd.slice(1) : cmd}`);
-    container.appendChild(btn);
-  });
-}
-renderGreekKeys();
+document.getElementById("importFile").addEventListener("change", event => {
+  const file = event.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = e => {
+    try {
+      const expressions = JSON.parse(e.target.result);
+      calculator.setExpressions([]);
+      expressions.forEach(expr => calculator.setExpression(expr));
+    } catch (err) {
+      alert("Invalid JSON file.");
+    }
+  };
+  reader.readAsText(file);
+});
