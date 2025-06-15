@@ -1,28 +1,40 @@
-// Desmosの初期化
-const elt = document.getElementById('calculator');
-const calculator = Desmos.GraphingCalculator(elt, {
-  expressions: true,
-  settingsMenu: false
-});
+document.addEventListener("DOMContentLoaded", () => {
+  const elt = document.getElementById('calculator');
+  const calculator = Desmos.GraphingCalculator(elt);
 
-// キーボードのボタンがクリックされたときの動作
-document.getElementById('keyboard').addEventListener('click', function (e) {
-  if (e.target.tagName === 'BUTTON') {
-    let latex = e.target.getAttribute('data-latex');  // \gamma など
+  let shift = false;
 
-    const current = calculator.getExpressions();
-    let target = current.find(expr => expr.id === 'main');
+  const greekLetters = [
+    ['alpha', 'beta', 'gamma', 'delta', 'epsilon', 'zeta', 'eta', 'theta', 'iota', 'kappa',
+     'lambda', 'mu', 'nu', 'xi', 'omicron', 'pi', 'rho', 'sigma', 'tau', 'upsilon',
+     'phi', 'chi', 'psi', 'omega'],
+    ['Alpha', 'Beta', 'Gamma', 'Delta', 'Epsilon', 'Zeta', 'Eta', 'Theta', 'Iota', 'Kappa',
+     'Lambda', 'Mu', 'Nu', 'Xi', 'Omicron', 'Pi', 'Rho', 'Sigma', 'Tau', 'Upsilon',
+     'Phi', 'Chi', 'Psi', 'Omega']
+  ];
 
-    // latexをそのまま渡すのではなく、Desmosに渡す直前でエスケープする
-    latex = latex.replace(/\\/g, '\\\\');  // \ を \\ に置換
+  const keyboardDiv = document.getElementById('keyboard');
 
-    if (!target) {
-      calculator.setExpression({ id: 'main', latex });
-    } else {
-      calculator.setExpression({
-        id: 'main',
-        latex: target.latex + latex
+  function renderKeyboard() {
+    keyboardDiv.innerHTML = '';
+    const letters = shift ? greekLetters[1] : greekLetters[0];
+    letters.forEach(letter => {
+      const button = document.createElement('button');
+      button.textContent = letter;
+      button.dataset.latex = `\\${letter}`;
+      button.addEventListener('click', () => {
+        const id = `expr${Date.now()}`;
+        calculator.setExpression({ id, latex: button.dataset.latex });
       });
-    }
+      keyboardDiv.appendChild(button);
+    });
   }
+
+  renderKeyboard();
+
+  document.getElementById('shiftBtn').addEventListener('click', () => {
+    shift = !shift;
+    document.getElementById('shiftBtn').textContent = shift ? 'ON' : 'OFF';
+    renderKeyboard();
+  });
 });
