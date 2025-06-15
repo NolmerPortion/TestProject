@@ -1,42 +1,95 @@
 body {
-  font-family: Arial, sans-serif;
-  text-align: center;
-  padding: 20px;
-  background-color: #f4f4f4;
+  font-family: sans-serif;
+  margin: 0;
+  padding: 0;
+  background-color: #f5f5f5;
 }
 
 #calculator {
-  margin: 0 auto;
-  width: 600px;
-  height: 400px;
-  border: 1px solid #ccc;
+  border-bottom: 2px solid #ccc;
 }
 
-#shift-toggle {
-  margin-top: 20px;
+#controlPanel {
+  padding: 10px;
+  background-color: #fff;
 }
 
-#keyboard {
+#latexInput {
+  width: 100%;
+  font-size: 1.2em;
+  margin-bottom: 10px;
+}
+
+#expressionSelector {
+  margin-bottom: 10px;
+  padding: 5px;
+  font-size: 1em;
+}
+
+#tabs {
   margin-top: 10px;
+}
+
+.tab-button {
+  padding: 8px 12px;
+  margin-right: 5px;
+  border: none;
+  background-color: #ddd;
+  cursor: pointer;
+}
+
+.tab-button:hover {
+  background-color: #ccc;
+}
+
+.tab-content {
+  display: none;
+  margin-top: 10px;
+}
+
+.tab-content.active {
   display: flex;
   flex-wrap: wrap;
-  justify-content: center;
-  max-width: 650px;
-  margin-left: auto;
-  margin-right: auto;
+  gap: 6px;
 }
 
-#keyboard button {
-  font-size: 18px;
-  margin: 5px;
-  padding: 8px 12px;
+#buttonPanel button,
+#alphabetButtons button {
+  padding: 6px 10px;
+  font-size: 1em;
   cursor: pointer;
-  border-radius: 4px;
+  background-color: #eee;
   border: 1px solid #ccc;
-  background-color: #fff;
-  transition: background-color 0.2s ease;
+  border-radius: 4px;
 }
 
-#keyboard button:hover {
-  background-color: #e0e0e0;
+#buttonPanel button:hover,
+#alphabetButtons button:hover {
+  background-color: #ddd;
+}
+
+#shiftToggle {
+  margin-bottom: 10px;
+  background-color: #cce;
+}
+
+#actionButtons {
+  margin-top: 15px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  align-items: center;
+}
+
+#statusIndicator {
+  margin-top: 5px;
+  font-size: 0.9em;
+  color: #333;
+}
+
+#alphabetButtons {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 10px;
 }
