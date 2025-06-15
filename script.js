@@ -3,6 +3,39 @@ const latexInput = document.getElementById("latexInput");
 const selector = document.getElementById("expressionSelector");
 const indicator = document.getElementById("statusIndicator");
 
+let isShift = false;
+
+// アルファベットキーの生成
+function createAlphabetButtons() {
+  const container = document.getElementById("alphabetButtons");
+  container.innerHTML = "";
+  const base = isShift ? "A" : "a";
+  for (let i = 0; i < 26; i++) {
+    const char = String.fromCharCode(base.charCodeAt(0) + i);
+    const button = document.createElement("button");
+    button.textContent = char;
+    button.setAttribute("data-insert", char);
+    button.addEventListener("click", () => {
+      const insert = button.getAttribute("data-insert");
+      const start = latexInput.selectionStart;
+      const end = latexInput.selectionEnd;
+      latexInput.setRangeText(insert, start, end, "end");
+      syncToDesmos();
+      latexInput.focus();
+    });
+    container.appendChild(button);
+  }
+}
+
+// 初回生成
+createAlphabetButtons();
+
+// Shift切替ボタン
+document.getElementById("shiftToggle").addEventListener("click", () => {
+  isShift = !isShift;
+  createAlphabetButtons();
+});
+
 function updateSelector() {
   const expressions = calculator.getExpressions();
   const currentId = selector.value;
@@ -50,7 +83,10 @@ calculator.observeEvent("change", () => {
 
 latexInput.addEventListener("input", syncToDesmos);
 
+// Greek/Function キーのイベント登録（alphabetButtons内のボタンは除外）
 document.querySelectorAll('[data-insert]').forEach(button => {
+  if (button.closest("#alphabetButtons")) return;
+
   button.addEventListener("click", () => {
     const insert = JSON.parse('"' + button.getAttribute("data-insert") + '"');
     const start = latexInput.selectionStart;
@@ -68,5 +104,6 @@ document.querySelectorAll(".tab-button").forEach(btn => {
   });
 });
 
+// 初期タブ・セレクタ設定
 document.querySelector(".tab-button[data-tab='letters']").click();
 updateSelector();
