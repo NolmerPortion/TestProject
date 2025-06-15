@@ -1,57 +1,103 @@
-document.addEventListener("DOMContentLoaded", () => {
-  const elt = document.getElementById('calculator');
-  const calculator = Desmos.GraphingCalculator(elt);
+const calculator = Desmos.GraphingCalculator(document.getElementById("calculator"));
+const latexInput = document.getElementById("latexInput");
+const selector = document.getElementById("expressionSelector");
+const indicator = document.getElementById("statusIndicator");
 
-  let shift = false;
+let isShift = false;
 
-  const greekLetters = [
-    ['alpha', 'beta', 'gamma', 'delta', 'epsilon', 'zeta', 'eta', 'theta', 'iota', 'kappa',
-     'lambda', 'mu', 'nu', 'xi', 'omicron', 'pi', 'rho', 'sigma', 'tau', 'upsilon',
-     'phi', 'chi', 'psi', 'omega'],
-    ['Alpha', 'Beta', 'Gamma', 'Delta', 'Epsilon', 'Zeta', 'Eta', 'Theta', 'Iota', 'Kappa',
-     'Lambda', 'Mu', 'Nu', 'Xi', 'Omicron', 'Pi', 'Rho', 'Sigma', 'Tau', 'Upsilon',
-     'Phi', 'Chi', 'Psi', 'Omega']
-  ];
-
-  const keyboardDiv = document.getElementById('keyboard');
-
-  function renderKeyboard() {
-    keyboardDiv.innerHTML = '';
-    const letters = shift ? greekLetters[1] : greekLetters[0];
-    letters.forEach(letter => {
-      const button = document.createElement('button');
-      button.textContent = letter;
-      button.dataset.latex = `\\${letter}`;
-      button.addEventListener('click', () => {
-        const selected = calculator.getSelectedExpression();
-        const latexCode = button.dataset.latex;
-
-        if (selected && selected.id) {
-          // 既存の選択された式に追記
-          calculator.setExpression({
-            id: selected.id,
-            latex: (selected.latex ?? '') + latexCode
-          });
-        } else {
-          // 新規行を作成し、選択状態にセット
-          const id = `expr${Date.now()}`;
-          calculator.setExpression({ id, latex: latexCode });
-
-          // 少し遅らせて選択状態を強制（UIとのタイミングずれ対策）
-          setTimeout(() => {
-            calculator.setSelectedExpression({ id });
-          }, 10);
-        }
-      });
-      keyboardDiv.appendChild(button);
+// アルファベットキーの動的生成
+const alphabetButtonsContainer = document.getElementById("alphabetButtons");
+function createAlphabetButtons() {
+  alphabetButtonsContainer.innerHTML = "";
+  const base = isShift ? 'A' : 'a';
+  for (let i = 0; i < 26; i++) {
+    const char = String.fromCharCode(base.charCodeAt(0) + i);
+    const button = document.createElement("button");
+    button.textContent = char;
+    button.setAttribute("data-insert", char);
+    button.addEventListener("click", () => {
+      const insert = button.getAttribute("data-insert");
+      const start = latexInput.selectionStart;
+      const end = latexInput.selectionEnd;
+      latexInput.setRangeText(insert, start, end, "end");
+      syncToDesmos();
+      latexInput.focus();
     });
+    alphabetButtonsContainer.appendChild(button);
   }
+}
 
-  renderKeyboard();
+createAlphabetButtons();
 
-  document.getElementById('shiftBtn').addEventListener('click', () => {
-    shift = !shift;
-    document.getElementById('shiftBtn').textContent = shift ? 'ON' : 'OFF';
-    renderKeyboard();
+document.getElementById("shiftToggle").addEventListener("click", () => {
+  isShift = !isShift;
+  createAlphabetButtons();
+});
+
+function updateSelector() {
+  const expressions = calculator.getExpressions();
+  const currentId = selector.value;
+  selector.innerHTML = "";
+  expressions.forEach((e, i) => {
+    const opt = document.createElement("option");
+    opt.value = e.id;
+    opt.textContent = `Line ${i + 1}`;
+    selector.appendChild(opt);
+  });
+  if (expressions.find(e => e.id === currentId)) {
+    selector.value = currentId;
+  } else if (expressions.length > 0) {
+    selector.value = expressions[0].id;
+  }
+}
+
+function syncToDesmos() {
+  const id = selector.value;
+  if (!id) return;
+  calculator.setExpression({ id, latex: latexInput.value });
+}
+
+function updateFromDesmos() {
+  const expr = calculator.getExpressions().find(e => e.id === selector.value);
+  if (expr && expr.latex !== undefined) {
+    latexInput.value = expr.latex;
+    indicator.textContent = `Selected: ${selector.options[selector.selectedIndex].text}`;
+  }
+}
+
+selector.addEventListener("change", updateFromDesmos);
+
+document.getElementById("sendBtn").onclick = syncToDesmos;
+document.getElementById("getBtn").onclick = updateFromDesmos;
+document.getElementById("clearInputBtn").onclick = () => {
+  latexInput.value = "";
+  syncToDesmos();
+};
+
+calculator.observeEvent("change", () => {
+  updateSelector();
+  updateFromDesmos();
+});
+
+latexInput.addEventListener("input", syncToDesmos);
+
+document.querySelectorAll('[data-insert]').forEach(button => {
+  button.addEventListener("click", () => {
+    const insert = JSON.parse('"' + button.getAttribute("data-insert") + '"');
+    const start = latexInput.selectionStart;
+    const end = latexInput.selectionEnd;
+    latexInput.setRangeText(insert, start, end, "end");
+    syncToDesmos();
+    latexInput.focus();
   });
 });
+
+document.querySelectorAll(".tab-button").forEach(btn => {
+  btn.addEventListener("click", () => {
+    document.querySelectorAll(".tab-content").forEach(tab => tab.classList.remove("active"));
+    document.getElementById(btn.dataset.tab).classList.add("active");
+  });
+});
+
+document.querySelector(".tab-button[data-tab='letters']").click();
+updateSelector();
