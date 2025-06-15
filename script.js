@@ -3,39 +3,6 @@ const latexInput = document.getElementById("latexInput");
 const selector = document.getElementById("expressionSelector");
 const indicator = document.getElementById("statusIndicator");
 
-let isShift = false;
-
-// アルファベットキーの生成
-function createAlphabetButtons() {
-  const container = document.getElementById("alphabetButtons");
-  container.innerHTML = "";
-  const base = isShift ? "A" : "a";
-  for (let i = 0; i < 26; i++) {
-    const char = String.fromCharCode(base.charCodeAt(0) + i);
-    const button = document.createElement("button");
-    button.textContent = char;
-    button.setAttribute("data-insert", char);
-    button.addEventListener("click", () => {
-      const insert = button.getAttribute("data-insert");
-      const start = latexInput.selectionStart;
-      const end = latexInput.selectionEnd;
-      latexInput.setRangeText(insert, start, end, "end");
-      syncToDesmos();
-      latexInput.focus();
-    });
-    container.appendChild(button);
-  }
-}
-
-// 初回生成
-createAlphabetButtons();
-
-// Shift切替ボタン
-document.getElementById("shiftToggle").addEventListener("click", () => {
-  isShift = !isShift;
-  createAlphabetButtons();
-});
-
 function updateSelector() {
   const expressions = calculator.getExpressions();
   const currentId = selector.value;
@@ -83,27 +50,69 @@ calculator.observeEvent("change", () => {
 
 latexInput.addEventListener("input", syncToDesmos);
 
-// Greek/Function キーのイベント登録（alphabetButtons内のボタンは除外）
-document.querySelectorAll('[data-insert]').forEach(button => {
-  if (button.closest("#alphabetButtons")) return;
+// Insert text at cursor
+function insertAtCursor(text) {
+  const start = latexInput.selectionStart;
+  const end = latexInput.selectionEnd;
+  latexInput.setRangeText(text, start, end, "end");
+  syncToDesmos();
+  latexInput.focus();
+}
 
-  button.addEventListener("click", () => {
-    const insert = JSON.parse('"' + button.getAttribute("data-insert") + '"');
-    const start = latexInput.selectionStart;
-    const end = latexInput.selectionEnd;
-    latexInput.setRangeText(insert, start, end, "end");
-    syncToDesmos();
-    latexInput.focus();
-  });
-});
-
+// Tab switching
 document.querySelectorAll(".tab-button").forEach(btn => {
   btn.addEventListener("click", () => {
     document.querySelectorAll(".tab-content").forEach(tab => tab.classList.remove("active"));
     document.getElementById(btn.dataset.tab).classList.add("active");
   });
 });
-
-// 初期タブ・セレクタ設定
 document.querySelector(".tab-button[data-tab='letters']").click();
-updateSelector();
+
+// Alphabet keys
+const alphaKeys = "abcdefghijklmnopqrstuvwxyz".split("");
+let shift = false;
+document.getElementById("shiftToggle").onclick = () => {
+  shift = !shift;
+  renderAlphabetKeys();
+};
+
+function renderAlphabetKeys() {
+  const container = document.getElementById("alphabetKeys");
+  container.innerHTML = "";
+  alphaKeys.forEach(ch => {
+    const btn = document.createElement("button");
+    const label = shift ? ch.toUpperCase() : ch;
+    btn.textContent = label;
+    btn.onclick = () => insertAtCursor(label);
+    container.appendChild(btn);
+  });
+}
+renderAlphabetKeys();
+
+// Greek keys
+const greekMap = [
+  ["alpha", "α", "Α"], ["beta", "β", "Β"], ["gamma", "γ", "Γ"], ["delta", "δ", "Δ"],
+  ["epsilon", "ε", "Ε"], ["zeta", "ζ", "Ζ"], ["eta", "η", "Η"], ["theta", "θ", "Θ"],
+  ["iota", "ι", "Ι"], ["kappa", "κ", "Κ"], ["lambda", "λ", "Λ"], ["mu", "μ", "Μ"],
+  ["nu", "ν", "Ν"], ["xi", "ξ", "Ξ"], ["omicron", "ο", "Ο"], ["pi", "π", "Π"],
+  ["rho", "ρ", "Ρ"], ["sigma", "σ", "Σ"], ["tau", "τ", "Τ"], ["upsilon", "υ", "Υ"],
+  ["phi", "φ", "Φ"], ["chi", "χ", "Χ"], ["psi", "ψ", "Ψ"], ["omega", "ω", "Ω"]
+];
+
+let greekShift = false;
+document.getElementById("greekShiftToggle").onclick = () => {
+  greekShift = !greekShift;
+  renderGreekKeys();
+};
+
+function renderGreekKeys() {
+  const container = document.getElementById("greekKeys");
+  container.innerHTML = "";
+  greekMap.forEach(([cmd, lower, upper]) => {
+    const btn = document.createElement("button");
+    btn.textContent = greekShift ? upper : lower;
+    btn.onclick = () => insertAtCursor(`\\${greekShift ? cmd.charAt(0).toUpperCase() + cmd.slice(1) : cmd}`);
+    container.appendChild(btn);
+  });
+}
+renderGreekKeys();
