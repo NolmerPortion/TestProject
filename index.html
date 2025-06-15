@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>Desmos + Greek Keyboard(fixed?)</title>
+  <title>Desmos + Greek Keyboard</title>
   <style>
     body {
       font-family: Arial, sans-serif;
@@ -58,10 +58,7 @@
   <script>
     document.addEventListener("DOMContentLoaded", () => {
       const elt = document.getElementById('calculator');
-      const calculator = Desmos.GraphingCalculator(elt, {
-        expressions: true,
-        settingsMenu: false
-      });
+      const calculator = Desmos.GraphingCalculator(elt);
 
       let shift = false;
 
@@ -78,23 +75,14 @@
 
       function renderKeyboard() {
         keyboardDiv.innerHTML = '';
-        (shift ? greekLetters[1] : greekLetters[0]).forEach(letter => {
+        const letters = shift ? greekLetters[1] : greekLetters[0];
+        letters.forEach(letter => {
           const button = document.createElement('button');
           button.textContent = letter;
           button.dataset.latex = `\\${letter}`;
           button.addEventListener('click', () => {
-            const exprs = calculator.getExpressions();
-            const selected = calculator.getSelectedExpression();
-            const escapedLatex = button.dataset.latex.replace(/\\/g, '\\\\');
-            if (selected) {
-              calculator.setExpression({
-                id: selected.id,
-                latex: (selected.latex || '') + escapedLatex
-              });
-            } else {
-              const newId = `expr${Date.now()}`;
-              calculator.setExpression({ id: newId, latex: escapedLatex });
-            }
+            const id = `expr${Date.now()}`;
+            calculator.setExpression({ id, latex: button.dataset.latex });
           });
           keyboardDiv.appendChild(button);
         });
