@@ -1,10 +1,10 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <title>Desmos + Greek Keyboard ver.1.1</title>
-  <link rel="stylesheet" href="style.css" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta charset="UTF-8">
+  <title>Desmos + Greek Keyboard ver.11 (Alphabet Patched)</title>
+  <link rel="stylesheet" href="style.css">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <script src="https://www.desmos.com/api/v1.11/calculator.js?apiKey=dcb31709b452b1cf9dc26972add0fda6"></script>
 </head>
 <body>
@@ -27,34 +27,34 @@
     <div id="buttonPanel">
       <div id="letters" class="tab-content">
         <button id="shiftToggle">⇧ Shift</button>
-        <!-- ここにA-Zのキーをscript.jsで自動生成 -->
+        <div id="alphabetButtons"></div>
       </div>
 
       <div id="greek" class="tab-content">
-        <button data-insert="\\alpha">α</button>
-        <button data-insert="\\beta">β</button>
-        <button data-insert="\\gamma">γ</button>
-        <button data-insert="\\delta">δ</button>
-        <button data-insert="\\epsilon">ε</button>
-        <button data-insert="\\zeta">ζ</button>
-        <button data-insert="\\eta">η</button>
-        <button data-insert="\\theta">θ</button>
-        <button data-insert="\\iota">ι</button>
-        <button data-insert="\\kappa">κ</button>
-        <button data-insert="\\lambda">λ</button>
-        <button data-insert="\\mu">μ</button>
-        <button data-insert="\\nu">ν</button>
-        <button data-insert="\\xi">ξ</button>
-        <button data-insert="\\omicron">ο</button>
-        <button data-insert="\\pi">π</button>
-        <button data-insert="\\rho">ρ</button>
-        <button data-insert="\\sigma">σ</button>
-        <button data-insert="\\tau">τ</button>
-        <button data-insert="\\upsilon">υ</button>
-        <button data-insert="\\phi">φ</button>
-        <button data-insert="\\chi">χ</button>
-        <button data-insert="\\psi">ψ</button>
-        <button data-insert="\\omega">ω</button>
+        <button data-insert="\\alpha">alpha</button>
+        <button data-insert="\\beta">beta</button>
+        <button data-insert="\\gamma">gamma</button>
+        <button data-insert="\\delta">delta</button>
+        <button data-insert="\\epsilon">epsilon</button>
+        <button data-insert="\\zeta">zeta</button>
+        <button data-insert="\\eta">eta</button>
+        <button data-insert="\\theta">theta</button>
+        <button data-insert="\\iota">iota</button>
+        <button data-insert="\\kappa">kappa</button>
+        <button data-insert="\\lambda">lambda</button>
+        <button data-insert="\\mu">mu</button>
+        <button data-insert="\\nu">nu</button>
+        <button data-insert="\\xi">xi</button>
+        <button data-insert="\\omicron">omicron</button>
+        <button data-insert="\\pi">pi</button>
+        <button data-insert="\\rho">rho</button>
+        <button data-insert="\\sigma">sigma</button>
+        <button data-insert="\\tau">tau</button>
+        <button data-insert="\\upsilon">upsilon</button>
+        <button data-insert="\\phi">phi</button>
+        <button data-insert="\\chi">chi</button>
+        <button data-insert="\\psi">psi</button>
+        <button data-insert="\\omega">omega</button>
       </div>
 
       <div id="functions" class="tab-content">
@@ -69,7 +69,7 @@
         <button data-insert="\\sin">sin</button>
         <button data-insert="\\tan">tan</button>
         <button data-insert="\\left(\\right)">()</button>
-        <button data-insert="{}">{}</button>
+        <button data-insert="{}">{ }</button>
       </div>
     </div>
 
@@ -80,7 +80,7 @@
       <button id="saveBtn">💾 Save to Local</button>
       <button id="loadBtn">📥 Load from Local</button>
       <button id="exportBtn">📤 Export JSON</button>
-      <input type="file" id="importFile" style="display:none" />
+      <input type="file" id="importFile" style="display:none">
       <button id="importBtn">📁 Import JSON</button>
       <div id="statusIndicator">No expression selected.</div>
     </div>
