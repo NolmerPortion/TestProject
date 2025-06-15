@@ -1,9 +1,10 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <title>Desmos + Greek Keyboard ver.1.0</title>
-  <link rel="stylesheet" href="style.css" />
+  <meta charset="UTF-8">
+  <title>Desmos + Greek Keyboard ver.11 (Alphabet Patched)</title>
+  <link rel="stylesheet" href="style.css">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <script src="https://www.desmos.com/api/v1.11/calculator.js?apiKey=dcb31709b452b1cf9dc26972add0fda6"></script>
 </head>
 <body>
@@ -26,6 +27,7 @@
     <div id="buttonPanel">
       <div id="letters" class="tab-content">
         <button id="shiftToggle">⇧ Shift</button>
+        <div id="alphabetButtons"></div>
       </div>
 
       <div id="greek" class="tab-content">
@@ -66,7 +68,7 @@
         <button data-insert="\\cos">cos</button>
         <button data-insert="\\sin">sin</button>
         <button data-insert="\\tan">tan</button>
-        <button data-insert="\\left(\\right)">( )</button>
+        <button data-insert="\\left(\\right)">()</button>
         <button data-insert="{}">{ }</button>
       </div>
     </div>
