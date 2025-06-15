@@ -5,11 +5,11 @@ const indicator = document.getElementById("statusIndicator");
 
 let isShift = false;
 
-// アルファベットキーの動的生成
-const alphabetButtonsContainer = document.getElementById("alphabetButtons");
+// アルファベットキーの生成
 function createAlphabetButtons() {
-  alphabetButtonsContainer.innerHTML = "";
-  const base = isShift ? 'A' : 'a';
+  const container = document.getElementById("alphabetButtons");
+  container.innerHTML = "";
+  const base = isShift ? "A" : "a";
   for (let i = 0; i < 26; i++) {
     const char = String.fromCharCode(base.charCodeAt(0) + i);
     const button = document.createElement("button");
@@ -23,12 +23,14 @@ function createAlphabetButtons() {
       syncToDesmos();
       latexInput.focus();
     });
-    alphabetButtonsContainer.appendChild(button);
+    container.appendChild(button);
   }
 }
 
+// 初回生成
 createAlphabetButtons();
 
+// Shift切替ボタン
 document.getElementById("shiftToggle").addEventListener("click", () => {
   isShift = !isShift;
   createAlphabetButtons();
@@ -99,5 +101,6 @@ document.querySelectorAll(".tab-button").forEach(btn => {
   });
 });
 
+// 初期タブ・セレクタ設定
 document.querySelector(".tab-button[data-tab='letters']").click();
 updateSelector();
