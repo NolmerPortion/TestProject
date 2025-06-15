@@ -2,8 +2,9 @@ const calculator = Desmos.GraphingCalculator(document.getElementById("calculator
 const latexInput = document.getElementById("latexInput");
 const selector = document.getElementById("expressionSelector");
 const indicator = document.getElementById("statusIndicator");
-const shiftToggle = document.getElementById("shiftToggle");
-let shiftOn = false;
+
+let alphabetShiftOn = false;
+let greekShiftOn = false;
 
 function updateSelector() {
   const expressions = calculator.getExpressions();
@@ -37,7 +38,6 @@ function updateFromDesmos() {
 }
 
 selector.addEventListener("change", updateFromDesmos);
-
 document.getElementById("sendBtn").onclick = syncToDesmos;
 document.getElementById("getBtn").onclick = updateFromDesmos;
 document.getElementById("clearInputBtn").onclick = () => {
@@ -52,9 +52,10 @@ calculator.observeEvent("change", () => {
 
 latexInput.addEventListener("input", syncToDesmos);
 
+// static function buttons
 document.querySelectorAll('[data-insert]').forEach(button => {
   button.addEventListener("click", () => {
-    const insert = JSON.parse('"' + button.getAttribute("data-insert") + '"');
+    const insert = button.getAttribute("data-insert");
     const start = latexInput.selectionStart;
     const end = latexInput.selectionEnd;
     latexInput.setRangeText(insert, start, end, "end");
@@ -63,34 +64,28 @@ document.querySelectorAll('[data-insert]').forEach(button => {
   });
 });
 
-document.querySelectorAll(".tab-button").forEach(btn => {
-  btn.addEventListener("click", () => {
-    document.querySelectorAll(".tab-content").forEach(tab => tab.classList.remove("active"));
-    document.getElementById(btn.dataset.tab).classList.add("active");
-  });
+// alphabet shift
+document.getElementById("shiftToggle").addEventListener("click", () => {
+  alphabetShiftOn = !alphabetShiftOn;
+  renderAlphabetKeys();
 });
 
-document.querySelector(".tab-button[data-tab='letters']").click();
-updateSelector();
-
-// Shift toggle for alphabet and greek tabs
-shiftToggle.addEventListener("click", () => {
-  shiftOn = !shiftOn;
-  renderAlphabetButtons();
-  renderGreekButtons();
+// greek shift
+document.getElementById("greekShiftToggle").addEventListener("click", () => {
+  greekShiftOn = !greekShiftOn;
+  renderGreekKeys();
 });
 
-// Dynamically render alphabet keys
-function renderAlphabetButtons() {
-  const lettersContainer = document.getElementById("letters");
-  lettersContainer.querySelectorAll(".letter-key").forEach(e => e.remove());
-
+// alphabet key rendering
+function renderAlphabetKeys() {
+  const container = document.getElementById("alphabetButtons");
+  container.innerHTML = "";
   for (let i = 97; i <= 122; i++) {
     const char = String.fromCharCode(i);
+    const label = alphabetShiftOn ? char.toUpperCase() : char;
     const btn = document.createElement("button");
-    btn.className = "letter-key";
-    btn.textContent = shiftOn ? char.toUpperCase() : char;
-    btn.setAttribute("data-insert", shiftOn ? char.toUpperCase() : char);
+    btn.textContent = label;
+    btn.setAttribute("data-insert", label);
     btn.addEventListener("click", () => {
       const insert = btn.getAttribute("data-insert");
       const start = latexInput.selectionStart;
@@ -99,41 +94,13 @@ function renderAlphabetButtons() {
       syncToDesmos();
       latexInput.focus();
     });
-    lettersContainer.appendChild(btn);
+    container.appendChild(btn);
   }
 }
 
-// Dynamically render Greek keys
-function renderGreekButtons() {
-  const greekLetters = [
-    "alpha", "beta", "gamma", "delta", "epsilon", "zeta", "eta", "theta", "iota", "kappa",
-    "lambda", "mu", "nu", "xi", "omicron", "pi", "rho", "sigma", "tau", "upsilon",
-    "phi", "chi", "psi", "omega"
-  ];
-  const greekContainer = document.getElementById("greek");
-  greekContainer.querySelectorAll(".greek-key").forEach(e => e.remove());
-
-  greekLetters.forEach(name => {
-    const btn = document.createElement("button");
-    btn.className = "greek-key";
-    const greekChar = nameToGreek(name, shiftOn);
-    btn.textContent = greekChar;
-    btn.setAttribute("data-insert", `\\${shiftOn ? name.toUpperCase() : name}`);
-    btn.addEventListener("click", () => {
-      const insert = JSON.parse('"' + btn.getAttribute("data-insert") + '"');
-      const start = latexInput.selectionStart;
-      const end = latexInput.selectionEnd;
-      latexInput.setRangeText(insert, start, end, "end");
-      syncToDesmos();
-      latexInput.focus();
-    });
-    greekContainer.appendChild(btn);
-  });
-}
-
-// Map LaTeX name to Greek Unicode
-function nameToGreek(name, isUpper) {
-  const map = {
+// greek key rendering
+function renderGreekKeys() {
+  const greekMap = {
     alpha: ["α", "Α"], beta: ["β", "Β"], gamma: ["γ", "Γ"], delta: ["δ", "Δ"],
     epsilon: ["ε", "Ε"], zeta: ["ζ", "Ζ"], eta: ["η", "Η"], theta: ["θ", "Θ"],
     iota: ["ι", "Ι"], kappa: ["κ", "Κ"], lambda: ["λ", "Λ"], mu: ["μ", "Μ"],
@@ -141,25 +108,48 @@ function nameToGreek(name, isUpper) {
     rho: ["ρ", "Ρ"], sigma: ["σ", "Σ"], tau: ["τ", "Τ"], upsilon: ["υ", "Υ"],
     phi: ["φ", "Φ"], chi: ["χ", "Χ"], psi: ["ψ", "Ψ"], omega: ["ω", "Ω"]
   };
-  return map[name] ? (isUpper ? map[name][1] : map[name][0]) : name;
+  const container = document.getElementById("greekButtons");
+  container.innerHTML = "";
+  for (const [name, [lower, upper]] of Object.entries(greekMap)) {
+    const label = greekShiftOn ? upper : lower;
+    const latex = greekShiftOn ? `\\${name.toUpperCase()}` : `\\${name}`;
+    const btn = document.createElement("button");
+    btn.textContent = label;
+    btn.setAttribute("data-insert", latex);
+    btn.addEventListener("click", () => {
+      const insert = btn.getAttribute("data-insert");
+      const start = latexInput.selectionStart;
+      const end = latexInput.selectionEnd;
+      latexInput.setRangeText(insert, start, end, "end");
+      syncToDesmos();
+      latexInput.focus();
+    });
+    container.appendChild(btn);
+  }
 }
 
-// Initial rendering
-renderAlphabetButtons();
-renderGreekButtons();
+// init tabs
+document.querySelectorAll(".tab-button").forEach(btn => {
+  btn.addEventListener("click", () => {
+    document.querySelectorAll(".tab-content").forEach(tab => tab.classList.remove("active"));
+    document.getElementById(btn.dataset.tab).classList.add("active");
+  });
+});
+document.querySelector(".tab-button[data-tab='letters']").click();
+updateSelector();
+renderAlphabetKeys();
+renderGreekKeys();
 
-// Save/load/export/import logic
+// storage/export/import
 document.getElementById("saveBtn").onclick = () => {
   const data = calculator.getState();
   localStorage.setItem("desmosGraph", JSON.stringify(data));
   alert("Saved to local storage.");
 };
-
 document.getElementById("loadBtn").onclick = () => {
   const data = localStorage.getItem("desmosGraph");
   if (data) calculator.setState(JSON.parse(data));
 };
-
 document.getElementById("exportBtn").onclick = () => {
   const data = calculator.getState();
   const blob = new Blob([JSON.stringify(data)], { type: "application/json" });
@@ -170,20 +160,16 @@ document.getElementById("exportBtn").onclick = () => {
   a.click();
   URL.revokeObjectURL(url);
 };
-
 document.getElementById("importBtn").onclick = () => {
   document.getElementById("importFile").click();
 };
-
 document.getElementById("importFile").addEventListener("change", event => {
   const file = event.target.files[0];
   if (!file) return;
   const reader = new FileReader();
   reader.onload = e => {
-    const content = e.target.result;
     try {
-      const json = JSON.parse(content);
-      calculator.setState(json);
+      calculator.setState(JSON.parse(e.target.result));
     } catch {
       alert("Invalid JSON file.");
     }
