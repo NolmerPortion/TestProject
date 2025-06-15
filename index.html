@@ -3,51 +3,9 @@
 <head>
   <meta charset="UTF-8">
   <title>Desmos + Greek Keyboard</title>
-  <style>
-    body {
-      font-family: Arial, sans-serif;
-      text-align: center;
-      padding: 20px;
-      background-color: #f4f4f4;
-    }
-
-    #calculator {
-      margin: 0 auto;
-      width: 600px;
-      height: 400px;
-      border: 1px solid #ccc;
-    }
-
-    #shift-toggle {
-      margin-top: 20px;
-    }
-
-    #keyboard {
-      margin-top: 10px;
-      display: flex;
-      flex-wrap: wrap;
-      justify-content: center;
-      max-width: 650px;
-      margin-left: auto;
-      margin-right: auto;
-    }
-
-    #keyboard button {
-      font-size: 18px;
-      margin: 5px;
-      padding: 8px 12px;
-      cursor: pointer;
-      border-radius: 4px;
-      border: 1px solid #ccc;
-      background-color: #fff;
-      transition: background-color 0.2s ease;
-    }
-
-    #keyboard button:hover {
-      background-color: #e0e0e0;
-    }
-  </style>
-  <script src="https://www.desmos.com/api/v1.6/calculator.js"></script>
+  <link rel="stylesheet" href="style.css">
+  <!-- 正しいAPIキー付きでDesmosライブラリを読み込み -->
+  <script src="https://www.desmos.com/api/v1.6/calculator.js?apiKey=dcb31709b452b1cf9dc26972add0fda6"></script>
 </head>
 <body>
   <h1>Desmos Graph + Greek Keyboard</h1>
@@ -55,47 +13,7 @@
   <div id="shift-toggle">Shift: <button id="shiftBtn">OFF</button></div>
   <div id="keyboard"></div>
 
-  <script>
-    document.addEventListener("DOMContentLoaded", () => {
-      const elt = document.getElementById('calculator');
-      const calculator = Desmos.GraphingCalculator(elt);
-
-      let shift = false;
-
-      const greekLetters = [
-        ['alpha', 'beta', 'gamma', 'delta', 'epsilon', 'zeta', 'eta', 'theta', 'iota', 'kappa',
-         'lambda', 'mu', 'nu', 'xi', 'omicron', 'pi', 'rho', 'sigma', 'tau', 'upsilon',
-         'phi', 'chi', 'psi', 'omega'],
-        ['Alpha', 'Beta', 'Gamma', 'Delta', 'Epsilon', 'Zeta', 'Eta', 'Theta', 'Iota', 'Kappa',
-         'Lambda', 'Mu', 'Nu', 'Xi', 'Omicron', 'Pi', 'Rho', 'Sigma', 'Tau', 'Upsilon',
-         'Phi', 'Chi', 'Psi', 'Omega']
-      ];
-
-      const keyboardDiv = document.getElementById('keyboard');
-
-      function renderKeyboard() {
-        keyboardDiv.innerHTML = '';
-        const letters = shift ? greekLetters[1] : greekLetters[0];
-        letters.forEach(letter => {
-          const button = document.createElement('button');
-          button.textContent = letter;
-          button.dataset.latex = `\\${letter}`;
-          button.addEventListener('click', () => {
-            const id = `expr${Date.now()}`;
-            calculator.setExpression({ id, latex: button.dataset.latex });
-          });
-          keyboardDiv.appendChild(button);
-        });
-      }
-
-      renderKeyboard();
-
-      document.getElementById('shiftBtn').addEventListener('click', () => {
-        shift = !shift;
-        document.getElementById('shiftBtn').textContent = shift ? 'ON' : 'OFF';
-        renderKeyboard();
-      });
-    });
-  </script>
+  <!-- JavaScriptを読み込み -->
+  <script src="script.js"></script>
 </body>
 </html>
