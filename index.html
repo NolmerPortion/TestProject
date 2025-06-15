@@ -3,63 +3,110 @@
 <head>
   <meta charset="UTF-8">
   <title>Desmos + Greek Keyboard</title>
-  <link rel="stylesheet" href="style.css">
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      text-align: center;
+      padding: 20px;
+      background-color: #f4f4f4;
+    }
+
+    #calculator {
+      margin: 0 auto;
+      width: 600px;
+      height: 400px;
+      border: 1px solid #ccc;
+    }
+
+    #shift-toggle {
+      margin-top: 20px;
+    }
+
+    #keyboard {
+      margin-top: 10px;
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      max-width: 650px;
+      margin-left: auto;
+      margin-right: auto;
+    }
+
+    #keyboard button {
+      font-size: 18px;
+      margin: 5px;
+      padding: 8px 12px;
+      cursor: pointer;
+      border-radius: 4px;
+      border: 1px solid #ccc;
+      background-color: #fff;
+      transition: background-color 0.2s ease;
+    }
+
+    #keyboard button:hover {
+      background-color: #e0e0e0;
+    }
+  </style>
   <script src="https://www.desmos.com/api/v1.6/calculator.js"></script>
 </head>
 <body>
   <h1>Desmos Graph + Greek Keyboard</h1>
-  <div id="calculator" style="width: 600px; height: 400px;"></div>
+  <div id="calculator"></div>
   <div id="shift-toggle">Shift: <button id="shiftBtn">OFF</button></div>
   <div id="keyboard"></div>
+
   <script>
-    const elt = document.getElementById('calculator');
-    const calculator = Desmos.GraphingCalculator(elt, {
-      expressions: true,
-      settingsMenu: false
-    });
-
-    let shift = false;
-
-    const greekLetters = [
-      ['alpha', 'beta', 'gamma', 'delta', 'epsilon', 'zeta', 'eta', 'theta', 'iota', 'kappa',
-       'lambda', 'mu', 'nu', 'xi', 'omicron', 'pi', 'rho', 'sigma', 'tau', 'upsilon',
-       'phi', 'chi', 'psi', 'omega'],
-      ['Alpha', 'Beta', 'Gamma', 'Delta', 'Epsilon', 'Zeta', 'Eta', 'Theta', 'Iota', 'Kappa',
-       'Lambda', 'Mu', 'Nu', 'Xi', 'Omicron', 'Pi', 'Rho', 'Sigma', 'Tau', 'Upsilon',
-       'Phi', 'Chi', 'Psi', 'Omega']
-    ];
-
-    const keyboardDiv = document.getElementById('keyboard');
-
-    function renderKeyboard() {
-      keyboardDiv.innerHTML = '';
-      const row = document.createElement('div');
-      (shift ? greekLetters[1] : greekLetters[0]).forEach(letter => {
-        const button = document.createElement('button');
-        button.textContent = letter;
-        button.dataset.latex = `\\${letter}`;
-        button.addEventListener('click', () => {
-          const exprs = calculator.getExpressions();
-          const selected = calculator.getSelectedExpression();
-          const latex = button.dataset.latex.replace(/\\/g, '\\\\');
-          if (selected) {
-            calculator.setExpression({ id: selected.id, latex: (selected.latex || '') + latex });
-          } else {
-            const newId = `expr${Date.now()}`;
-            calculator.setExpression({ id: newId, latex });
-          }
-        });
-        row.appendChild(button);
+    document.addEventListener("DOMContentLoaded", () => {
+      const elt = document.getElementById('calculator');
+      const calculator = Desmos.GraphingCalculator(elt, {
+        expressions: true,
+        settingsMenu: false
       });
-      keyboardDiv.appendChild(row);
-    }
 
-    renderKeyboard();
+      let shift = false;
 
-    document.getElementById('shiftBtn').addEventListener('click', () => {
-      shift = !shift;
-      document.getElementById('shiftBtn').textContent = shift ? 'ON' : 'OFF';
+      const greekLetters = [
+        ['alpha', 'beta', 'gamma', 'delta', 'epsilon', 'zeta', 'eta', 'theta', 'iota', 'kappa',
+         'lambda', 'mu', 'nu', 'xi', 'omicron', 'pi', 'rho', 'sigma', 'tau', 'upsilon',
+         'phi', 'chi', 'psi', 'omega'],
+        ['Alpha', 'Beta', 'Gamma', 'Delta', 'Epsilon', 'Zeta', 'Eta', 'Theta', 'Iota', 'Kappa',
+         'Lambda', 'Mu', 'Nu', 'Xi', 'Omicron', 'Pi', 'Rho', 'Sigma', 'Tau', 'Upsilon',
+         'Phi', 'Chi', 'Psi', 'Omega']
+      ];
+
+      const keyboardDiv = document.getElementById('keyboard');
+
+      function renderKeyboard() {
+        keyboardDiv.innerHTML = '';
+        (shift ? greekLetters[1] : greekLetters[0]).forEach(letter => {
+          const button = document.createElement('button');
+          button.textContent = letter;
+          button.dataset.latex = `\\${letter}`;
+          button.addEventListener('click', () => {
+            const exprs = calculator.getExpressions();
+            const selected = calculator.getSelectedExpression();
+            const escapedLatex = button.dataset.latex.replace(/\\/g, '\\\\');
+            if (selected) {
+              calculator.setExpression({
+                id: selected.id,
+                latex: (selected.latex || '') + escapedLatex
+              });
+            } else {
+              const newId = `expr${Date.now()}`;
+              calculator.setExpression({ id: newId, latex: escapedLatex });
+            }
+          });
+          keyboardDiv.appendChild(button);
+        });
+      }
+
       renderKeyboard();
+
+      document.getElementById('shiftBtn').addEventListener('click', () => {
+        shift = !shift;
+        document.getElementById('shiftBtn').textContent = shift ? 'ON' : 'OFF';
+        renderKeyboard();
+      });
     });
   </script>
 </body>
