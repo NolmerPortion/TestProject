@@ -23,8 +23,18 @@ document.addEventListener("DOMContentLoaded", () => {
       button.textContent = letter;
       button.dataset.latex = `\\${letter}`;
       button.addEventListener('click', () => {
-        const id = `expr${Date.now()}`;
-        calculator.setExpression({ id, latex: button.dataset.latex });
+        const selected = calculator.getSelectedExpression();
+        const latexCode = button.dataset.latex;
+
+        if (selected && selected.id) {
+          calculator.setExpression({
+            id: selected.id,
+            latex: (selected.latex || '') + latexCode
+          });
+        } else {
+          const id = `expr${Date.now()}`;
+          calculator.setExpression({ id, latex: latexCode });
+        }
       });
       keyboardDiv.appendChild(button);
     });
