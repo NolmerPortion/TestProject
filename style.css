@@ -1,0 +1,25 @@
+body {
+  font-family: Arial, sans-serif;
+  text-align: center;
+  padding: 20px;
+  background-color: #f4f4f4;
+}
+
+#keyboard {
+  margin-top: 20px;
+}
+
+#keyboard button {
+  font-size: 20px;
+  margin: 5px;
+  padding: 10px 15px;
+  cursor: pointer;
+  border-radius: 5px;
+  border: 1px solid #ccc;
+  background-color: #fff;
+  transition: background-color 0.2s ease;
+}
+
+#keyboard button:hover {
+  background-color: #e0e0e0;
+}
